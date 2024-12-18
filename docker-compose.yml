@@ -1,0 +1,31 @@
+services:
+  primary:
+    build:
+      context: ./primary
+    container_name: primary_service
+    environment:
+      - SERVICE_NAME=primary
+    ports:
+      - "8001:8000"
+    command: sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+
+  backup:
+    build:
+      context: ./backup
+    container_name: backup_service
+    environment:
+      - SERVICE_NAME=backup
+    ports:
+      - "8002:8000"
+    command: sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+
+  nginx:
+    build:
+      context: .
+      dockerfile: ./NginxDockerfile
+    container_name: nginx_balancer
+    ports:
+      - "8080:80"
+    depends_on:
+      - primary
+      - backup
